@@ -23,6 +23,11 @@ module.exports = (bot) => {
       }
 
       const state = getState(userId);
+      if (text === "❌ Отмена") {
+        clearState(userId);
+        userData.delete(userId);
+        return bot.sendMessage(msg.chat.id, "Заявка отменена ❌");
+      }
 
       // 👤 имя
       if (state === "WAIT_NAME") {
@@ -33,6 +38,10 @@ module.exports = (bot) => {
 
       // 📱 телефон
       if (state === "WAIT_PHONE") {
+        if (!/^\+?\d{10,15}$/.test(text)) {
+            return bot.sendMessage(msg.chat.id, "Введите корректный телефон 🙏");
+        }
+
         userData.get(userId).phone = text;
         setState(userId, "WAIT_MESSAGE");
         return bot.sendMessage(msg.chat.id, "Комментарий?");
@@ -43,24 +52,43 @@ module.exports = (bot) => {
         const data = userData.get(userId);
 
         await createRequest({
-          userId,
-          name: data.name,
-          phone: data.phone,
-          message: text,
+            userId,
+            name: data.name,
+            phone: data.phone,
+            message: text,
+            username: msg.from.username,
         });
 
-        // очистка
         clearState(userId);
         userData.delete(userId);
 
-        bot.sendMessage(msg.chat.id, "Заявка отправлена ✅");
+        // ✅ сообщение пользователю
+        bot.sendMessage(
+            msg.chat.id,
+            "✅ Заявка принята!\nМенеджер скоро свяжется 🚀"
+        );
+
+        // 👇 ВОТ СЮДА ВСТАВЛЯЕТСЯ ТВОЙ КОД
+        const username = msg.from.username
+            ? `@${msg.from.username}`
+            : "нет";
+
+        const now = new Date().toLocaleString("ru-RU");
 
         bot.sendMessage(
-          ADMIN_ID,
-          `🔥 Новая заявка:
-👤 Имя: ${data.name}
-📱 Телефон: ${data.phone}
-💬 Сообщение: ${text}`
+            ADMIN_ID,
+            `🔥 <b>Новая заявка</b>
+
+        👤 <b>Имя:</b> ${data.name}
+        📱 <b>Телефон:</b> ${data.phone}
+        💬 <b>Сообщение:</b> ${text}
+
+        🔗 <b>Telegram:</b> ${username}
+        🕒 <b>Время:</b> ${now}
+        🆔 <b>User ID:</b> ${userId}`,
+            {
+            parse_mode: "HTML",
+            }
         );
       }
 
