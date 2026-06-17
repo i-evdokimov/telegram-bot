@@ -10,88 +10,129 @@ module.exports = (bot) => {
     const text = msg.text;
 
     try {
-      // 🚀 старт анкеты
-      if (text === "📩 Оставить заявку") {
-        setState(userId, "WAIT_NAME");
-        userData.set(userId, {});
-        return bot.sendMessage(msg.chat.id, "Как вас зовут?");
+      // 🚀 СТАРТ
+      if (text === "/start") {
+        clearState(userId);
+        userData.delete(userId);
+
+        return bot.sendMessage(
+          msg.chat.id,
+          "Добро пожаловать 👋\n\nВыберите действие:",
+          {
+            reply_markup: {
+              keyboard: [
+                ["📩 Оставить заявку"],
+                ["📞 Контакты"],
+                ["❌ Отмена"],
+              ],
+              resize_keyboard: true,
+            },
+          }
+        );
       }
 
-      // 📞 контакты
-      if (text === "📞 Контакты") {
-        return bot.sendMessage(msg.chat.id, "Связь: @wakemeuparalyzed");
-      }
-
-      const state = getState(userId);
+      // ❌ ОТМЕНА
       if (text === "❌ Отмена") {
         clearState(userId);
         userData.delete(userId);
+
         return bot.sendMessage(msg.chat.id, "Заявка отменена ❌");
       }
 
-      // 👤 имя
+      // 📩 НАЧАЛО АНКЕТЫ
+      if (text === "📩 Оставить заявку") {
+        setState(userId, "WAIT_NAME");
+        userData.set(userId, {});
+
+        return bot.sendMessage(
+          msg.chat.id,
+          "👋 Отлично, давайте оформим заявку\n\nКак вас зовут?"
+        );
+      }
+
+      // 📞 КОНТАКТЫ
+      if (text === "📞 Контакты") {
+        return bot.sendMessage(
+          msg.chat.id,
+          "Связь: @wakemeuparalyzed"
+        );
+      }
+
+      const state = getState(userId);
+
+      // 👤 ИМЯ
       if (state === "WAIT_NAME") {
         userData.get(userId).name = text;
         setState(userId, "WAIT_PHONE");
-        return bot.sendMessage(msg.chat.id, "Ваш телефон?");
+
+        return bot.sendMessage(
+          msg.chat.id,
+          "📱 Укажите ваш телефон\n\n(пример: +79991234567)"
+        );
       }
 
-      // 📱 телефон
+      // 📱 ТЕЛЕФОН
       if (state === "WAIT_PHONE") {
-        if (!/^\+?\d{10,15}$/.test(text)) {
-            return bot.sendMessage(msg.chat.id, "Введите корректный телефон 🙏");
+        if (!/^\+7\d{10}$/.test(text)) {
+          return bot.sendMessage(
+            msg.chat.id,
+            "Введите телефон в формате +79991234567 🙏"
+          );
         }
 
         userData.get(userId).phone = text;
         setState(userId, "WAIT_MESSAGE");
-        return bot.sendMessage(msg.chat.id, "Комментарий?");
+
+        return bot.sendMessage(
+          msg.chat.id,
+          "💬 Напишите комментарий или задачу"
+        );
       }
 
-      // 💬 финал
+      // 💬 ФИНАЛ
       if (state === "WAIT_MESSAGE") {
         const data = userData.get(userId);
 
         await createRequest({
-            userId,
-            name: data.name,
-            phone: data.phone,
-            message: text,
-            username: msg.from.username,
+          userId,
+          name: data.name,
+          phone: data.phone,
+          message: text,
+          username: msg.from.username,
         });
 
         clearState(userId);
         userData.delete(userId);
 
-        // ✅ сообщение пользователю
+        // ✅ пользователю
         bot.sendMessage(
-            msg.chat.id,
-            "✅ Заявка принята!\nМенеджер скоро свяжется 🚀"
+          msg.chat.id,
+          "✅ Заявка принята!\nМенеджер скоро свяжется 🚀"
         );
 
-        // 👇 ВОТ СЮДА ВСТАВЛЯЕТСЯ ТВОЙ КОД
+        // 🔔 админу
         const username = msg.from.username
-            ? `@${msg.from.username}`
-            : "нет";
+          ? `@${msg.from.username}`
+          : "нет";
 
         const now = new Date().toLocaleString("ru-RU");
 
         bot.sendMessage(
-            ADMIN_ID,
-            `🔥 <b>Новая заявка</b>
+          ADMIN_ID,
+          `🔥 <b>Новая заявка</b>
 
-        👤 <b>Имя:</b> ${data.name}
-        📱 <b>Телефон:</b> ${data.phone}
-        💬 <b>Сообщение:</b> ${text}
+👤 <b>Имя:</b> ${data.name}
+📱 <b>Телефон:</b> ${data.phone}
+💬 <b>Сообщение:</b> ${text}
 
-        🔗 <b>Telegram:</b> ${username}
-        🕒 <b>Время:</b> ${now}
-        🆔 <b>User ID:</b> ${userId}`,
-            {
+🔗 <b>Telegram:</b> ${username}
+🕒 <b>Время:</b> ${now}
+🆔 <b>User ID:</b> ${userId}`,
+          {
             parse_mode: "HTML",
-            }
+          }
         );
       }
-
     } catch (e) {
       console.error(e);
       bot.sendMessage(msg.chat.id, "Ошибка 😢");
