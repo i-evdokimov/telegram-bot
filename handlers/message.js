@@ -1,6 +1,7 @@
 const { setState, getState, clearState } = require("../services/stateService");
 const { createRequest } = require("../services/requestService");
 const { ADMIN_ID } = require("../config");
+const { mainKeyboard } = require("../keyboards/main");
 
 const userData = new Map();
 
@@ -18,16 +19,15 @@ module.exports = (bot) => {
         return bot.sendMessage(
           msg.chat.id,
           "Добро пожаловать 👋\n\nВыберите действие:",
-          {
-            reply_markup: {
-              keyboard: [
-                ["📩 Оставить заявку"],
-                ["📞 Контакты"],
-                ["❌ Отмена"],
-              ],
-              resize_keyboard: true,
-            },
-          }
+          mainKeyboard
+        );
+      }
+
+      // 📊 АДМИНКА (кнопка)
+      if (text === "📊 Админка" && userId === ADMIN_ID) {
+        return bot.sendMessage(
+          msg.chat.id,
+          "📊 Админка\n\nКоманды:\n/requests\n/stats"
         );
       }
 
@@ -36,7 +36,11 @@ module.exports = (bot) => {
         clearState(userId);
         userData.delete(userId);
 
-        return bot.sendMessage(msg.chat.id, "Заявка отменена ❌");
+        return bot.sendMessage(
+          msg.chat.id,
+          "Заявка отменена ❌",
+          mainKeyboard
+        );
       }
 
       // 📩 НАЧАЛО АНКЕТЫ
@@ -54,7 +58,8 @@ module.exports = (bot) => {
       if (text === "📞 Контакты") {
         return bot.sendMessage(
           msg.chat.id,
-          "Связь: @wakemeuparalyzed"
+          "Связь: @wakemeuparalyzed",
+          mainKeyboard
         );
       }
 
@@ -105,9 +110,10 @@ module.exports = (bot) => {
         userData.delete(userId);
 
         // ✅ пользователю
-        bot.sendMessage(
+        await bot.sendMessage(
           msg.chat.id,
-          "✅ Заявка принята!\nМенеджер скоро свяжется 🚀"
+          "✅ Заявка принята!\nМенеджер скоро свяжется 🚀",
+          mainKeyboard
         );
 
         // 🔔 админу
@@ -117,7 +123,7 @@ module.exports = (bot) => {
 
         const now = new Date().toLocaleString("ru-RU");
 
-        bot.sendMessage(
+        await bot.sendMessage(
           ADMIN_ID,
           `🔥 <b>Новая заявка</b>
 
