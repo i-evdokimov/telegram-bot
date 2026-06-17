@@ -19,7 +19,7 @@ module.exports = (bot) => {
 
       // 📞 контакты
       if (text === "📞 Контакты") {
-        return bot.sendMessage(msg.chat.id, "Связь: @your_username");
+        return bot.sendMessage(msg.chat.id, "Связь: @wakemeuparalyzed");
       }
 
       const state = getState(userId);
