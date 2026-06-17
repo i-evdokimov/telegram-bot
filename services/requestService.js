@@ -1,21 +1,11 @@
 const pool = require("../db");
 
-async function createRequest(userId, message) {
+async function createRequest({ userId, name, phone, message }) {
   return pool.query(
-    "INSERT INTO requests (user_id, message) VALUES ($1, $2)",
-    [userId, message]
+    `INSERT INTO requests (user_id, name, phone, message)
+     VALUES ($1, $2, $3, $4)`,
+    [userId, name, phone, message]
   );
 }
 
-async function getLastRequests(limit = 5) {
-  const res = await pool.query(
-    "SELECT * FROM requests ORDER BY id DESC LIMIT $1",
-    [limit]
-  );
-  return res.rows;
-}
-
-module.exports = {
-  createRequest,
-  getLastRequests,
-};
+module.exports = { createRequest };
