@@ -10,7 +10,7 @@ module.exports = (bot) => {
       if (text === "📞 Контакты") {
         return bot.sendMessage(
           msg.chat.id,
-          "Связь: @your_username"
+          "Связь: @wakemeuparalyzed"
         );
       }
 
