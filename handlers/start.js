@@ -5,7 +5,6 @@ module.exports = (bot) => {
         keyboard: [
           ["📩 Оставить заявку"],
           ["📞 Контакты"],
-          ["❌ Отмена"]
         ],
         resize_keyboard: true,
       },

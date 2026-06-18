@@ -1,7 +1,7 @@
 const { setState, getState, clearState } = require("../services/stateService");
 const { createRequest } = require("../services/requestService");
 const { ADMIN_ID } = require("../config");
-const { mainKeyboard } = require("../keyboards/main");
+const { getMainKeyboard } = require("../keyboards/main");
 
 const userData = new Map();
 
@@ -19,27 +19,24 @@ module.exports = (bot) => {
         return bot.sendMessage(
           msg.chat.id,
           "Добро пожаловать 👋\n\nВыберите действие:",
-          mainKeyboard
+          getMainKeyboard
         );
       }
 
       // 📊 АДМИНКА (кнопка)
-      if (text === "📊 Админка" && userId === ADMIN_ID) {
+      if (text === "📊 Админка") {
+        // если не админ — отказ
+        if (userId !== ADMIN_ID) {
+          return bot.sendMessage(
+            msg.chat.id,
+            "нет доступа"
+          );
+        }
+
+        // если админ — пускаем
         return bot.sendMessage(
           msg.chat.id,
           "📊 Админка\n\nКоманды:\n/requests\n/stats"
-        );
-      }
-
-      // ❌ ОТМЕНА
-      if (text === "❌ Отмена") {
-        clearState(userId);
-        userData.delete(userId);
-
-        return bot.sendMessage(
-          msg.chat.id,
-          "Заявка отменена ❌",
-          mainKeyboard
         );
       }
 
@@ -59,7 +56,7 @@ module.exports = (bot) => {
         return bot.sendMessage(
           msg.chat.id,
           "Связь: @wakemeuparalyzed",
-          mainKeyboard
+          getMainKeyboard
         );
       }
 
@@ -113,7 +110,7 @@ module.exports = (bot) => {
         await bot.sendMessage(
           msg.chat.id,
           "✅ Заявка принята!\nМенеджер скоро свяжется 🚀",
-          mainKeyboard
+          getMainKeyboard
         );
 
         // 🔔 админу

@@ -1,12 +1,22 @@
-const mainKeyboard = {
-  reply_markup: {
-    keyboard: [
-      ["📩 Оставить заявку"],
-      ["📞 Контакты"],
-      ["📊 Админка"],
-    ],
-    resize_keyboard: true,
-  },
+const { ADMIN_ID } = require("../config");
+
+const getMainKeyboard = (userId) => {
+  const keyboard = [
+    ["📩 Оставить заявку"],
+    ["📞 Контакты"],
+  ];
+
+  // добавляем кнопку только админу
+  if (userId === ADMIN_ID) {
+    keyboard.push(["📊 Админка"]);
+  }
+
+  return {
+    reply_markup: {
+      keyboard,
+      resize_keyboard: true,
+    },
+  };
 };
 
-module.exports = { mainKeyboard };
+module.exports = { getMainKeyboard };
