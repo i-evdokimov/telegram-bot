@@ -10,6 +10,9 @@ module.exports = (bot) => {
     const userId = msg.from.id;
     const text = msg.text;
 
+    // ❗ защита от не-текстовых сообщений
+    if (!text) return;
+
     try {
       // 🚀 СТАРТ
       if (text === "/start") {
@@ -18,22 +21,17 @@ module.exports = (bot) => {
 
         return bot.sendMessage(
           msg.chat.id,
-          "Добро пожаловать 👋\n\nВыберите действие:",
-          getMainKeyboard
+          "Добро пожаловать\n\nВыберите действие:",
+          getMainKeyboard(userId)
         );
       }
 
-      // 📊 АДМИНКА (кнопка)
+      // 📊 АДМИНКА
       if (text === "📊 Админка") {
-        // если не админ — отказ
         if (userId !== ADMIN_ID) {
-          return bot.sendMessage(
-            msg.chat.id,
-            "нет доступа"
-          );
+          return bot.sendMessage(msg.chat.id, "нет доступа");
         }
 
-        // если админ — пускаем
         return bot.sendMessage(
           msg.chat.id,
           "📊 Админка\n\nКоманды:\n/requests\n/stats"
@@ -47,7 +45,7 @@ module.exports = (bot) => {
 
         return bot.sendMessage(
           msg.chat.id,
-          "👋 Отлично, давайте оформим заявку\n\nКак вас зовут?"
+          "Давайте оформим заявку\n\nКак вас зовут?"
         );
       }
 
@@ -56,7 +54,7 @@ module.exports = (bot) => {
         return bot.sendMessage(
           msg.chat.id,
           "Связь: @wakemeuparalyzed",
-          getMainKeyboard
+          getMainKeyboard(userId)
         );
       }
 
@@ -69,7 +67,7 @@ module.exports = (bot) => {
 
         return bot.sendMessage(
           msg.chat.id,
-          "📱 Укажите ваш телефон\n\n(пример: +79991234567)"
+          "Укажите телефон\n\nпример: +79991234567"
         );
       }
 
@@ -78,7 +76,7 @@ module.exports = (bot) => {
         if (!/^\+7\d{10}$/.test(text)) {
           return bot.sendMessage(
             msg.chat.id,
-            "Введите телефон в формате +79991234567 🙏"
+            "Введите телефон в формате +79991234567"
           );
         }
 
@@ -87,7 +85,7 @@ module.exports = (bot) => {
 
         return bot.sendMessage(
           msg.chat.id,
-          "💬 Напишите комментарий или задачу"
+          "Напишите комментарий"
         );
       }
 
@@ -106,14 +104,14 @@ module.exports = (bot) => {
         clearState(userId);
         userData.delete(userId);
 
-        // ✅ пользователю
+        // пользователю
         await bot.sendMessage(
           msg.chat.id,
-          "✅ Заявка принята!\nМенеджер скоро свяжется 🚀",
-          getMainKeyboard
+          "Заявка принята",
+          getMainKeyboard(userId)
         );
 
-        // 🔔 админу
+        // админу
         const username = msg.from.username
           ? `@${msg.from.username}`
           : "нет";
@@ -122,23 +120,20 @@ module.exports = (bot) => {
 
         await bot.sendMessage(
           ADMIN_ID,
-          `🔥 <b>Новая заявка</b>
+          `Новая заявка
 
-👤 <b>Имя:</b> ${data.name}
-📱 <b>Телефон:</b> ${data.phone}
-💬 <b>Сообщение:</b> ${text}
+Имя: ${data.name}
+Телефон: ${data.phone}
+Сообщение: ${text}
 
-🔗 <b>Telegram:</b> ${username}
-🕒 <b>Время:</b> ${now}
-🆔 <b>User ID:</b> ${userId}`,
-          {
-            parse_mode: "HTML",
-          }
+Telegram: ${username}
+Время: ${now}
+User ID: ${userId}`
         );
       }
     } catch (e) {
       console.error(e);
-      bot.sendMessage(msg.chat.id, "Ошибка 😢");
+      bot.sendMessage(msg.chat.id, "Ошибка");
     }
   });
 };

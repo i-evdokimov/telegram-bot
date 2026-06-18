@@ -6,7 +6,6 @@ const getMainKeyboard = (userId) => {
     ["📞 Контакты"],
   ];
 
-  // добавляем кнопку только админу
   if (userId === ADMIN_ID) {
     keyboard.push(["📊 Админка"]);
   }
